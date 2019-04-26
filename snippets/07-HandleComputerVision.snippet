@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+    <CodeSnippet Format="1.0.0">
+        <Header>
+            <Title>07-HandleComputerVision</Title>
+        </Header>
+        <Snippet>
+            <Code Language="csharp">
+                <![CDATA[
+				private async Task HandleComputerVision(ITurnContext turnContext, Attachment attachment,
+            CancellationToken cancellationToken)
+        {
+            var imageContents = await _httpClient.GetByteArrayAsync(attachment.ContentUrl);
+            var result = await QueryComputerVisionApi(imageContents);
+
+            var celebName = result.Categories.FirstOrDefault()?.Detail.Celebrities.FirstOrDefault();
+
+            if (celebName != null && celebName.Confidence > _treshold)
+            {
+                var caption = result.Description.Captions.FirstOrDefault();
+                if (caption != null && caption.Confidence > _treshold)
+                {
+                    await turnContext.SendActivityAsync($"Is this you or is this {caption.Text}? Please upload another picture.", cancellationToken: cancellationToken);
+                }
+            }
+            else
+            {
+                var age = result.Faces.FirstOrDefault()?.Age;
+                _logger.LogInformation($"Age is: {age}");
+
+                if (age <= 35)
+                {
+                    var caption = result.Description?.Captions?.FirstOrDefault();
+
+                    await turnContext.SendActivityAsync($"Thank you hipster, always nice to see {caption?.Text}! Let's continue the registration process!", cancellationToken: cancellationToken);
+                }
+                else
+                {
+                    await turnContext.SendActivityAsync("Thank you sir, let's continue the registration process!", cancellationToken: cancellationToken);
+                }
+            }
+        }
+		
+		/// <summary>
+        /// Sends out a query to the computer vision api and validates the result
+        /// </summary>
+        /// <param name="attachment"></param>
+        /// <returns></returns>
+        private async Task<VisionResult> QueryComputerVisionApi(byte[] attachment)
+        {
+            var endpoint = "https://westeurope.api.cognitive.microsoft.com/vision/v1.0/analyze?visualFeatures=Categories,Description,Color,Faces&details=Celebrities&language=en";
+
+            var imageBinaryContent = new ByteArrayContent(attachment);
+            var multipartContent = new MultipartFormDataContent { { imageBinaryContent, "image" } };
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, endpoint) { Content = multipartContent };
+            requestMessage.Headers.Add("Ocp-Apim-Subscription-Key", _configuration["computerVisionKey"]);
+
+            _logger.LogDebug($"Posting to Computer Vision: {endpoint}");
+
+            var response = await _httpClient.SendAsync(requestMessage);
+            VisionResult result = null;
+
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation($"Luis response: {responseString}");
+                result = JsonConvert.DeserializeObject<VisionResult>(responseString);
+            }
+            else
+            {
+                _logger.LogInformation($"Ooops, could not query vision api: {response.StatusCode} {response.ReasonPhrase} {responseString}");
+            }
+
+            return result;
+        }
+				]]>
+            </Code>
+        </Snippet>
+    </CodeSnippet>
+</CodeSnippets>

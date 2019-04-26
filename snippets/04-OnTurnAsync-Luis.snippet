@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+    <CodeSnippet Format="1.0.0">
+        <Header>
+            <Title>04-OnTurnAsync-Luis</Title>
+        </Header>
+        <Snippet>
+            <Code Language="csharp">
+                <![CDATA[
+				if (turnContext.Activity.Type == ActivityTypes.Message)
+				{
+					// retrieve conversation state
+					ConversationData conversationData = await _stateBotAccessors.ConversationDataAccessor.GetAsync(turnContext, () => new ConversationData());
+
+					var messageActivity = turnContext.Activity?.AsMessageActivity();
+
+					if (conversationData.Sequence == null)
+					{
+						if (await HandleLuis(turnContext, cancellationToken))
+						{
+							conversationData.Sequence = 1;
+						}
+					}
+					else
+					{
+						// todo computer-vision
+					}
+
+					// Update conversation state and save changes.
+					await _stateBotAccessors.ConversationDataAccessor.SetAsync(turnContext, conversationData, cancellationToken);
+					await _stateBotAccessors.ConversationState.SaveChangesAsync(turnContext, cancellationToken: cancellationToken);
+				}
+				]]>
+            </Code>
+        </Snippet>
+    </CodeSnippet>
+</CodeSnippets>

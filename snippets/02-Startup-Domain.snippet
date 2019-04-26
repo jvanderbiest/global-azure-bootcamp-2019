@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+    <CodeSnippet Format="1.0.0">
+        <Header>
+            <Title>02-Startup-Domain</Title>
+        </Header>
+        <Snippet>
+            <Code Language="csharp">
+                <![CDATA[
+				      public class StateBotAccessors
+					{
+						public StateBotAccessors(ConversationState conversationState)
+						{
+							ConversationState = conversationState ?? throw new ArgumentNullException(nameof(conversationState));
+						}
+
+						public static string ConversationDataName { get; } = "ConversationData";
+
+						public IStatePropertyAccessor<ConversationData> ConversationDataAccessor { get; set; }
+
+						public ConversationState ConversationState { get; }
+					}
+
+					// Defines a state property used to track conversation data.
+					public class ConversationData
+					{
+						public int? Sequence { get; set; }
+					}
+				]]>
+            </Code>
+        </Snippet>
+    </CodeSnippet>
+</CodeSnippets>
