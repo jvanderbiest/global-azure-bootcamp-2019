@@ -8,55 +8,55 @@
             <Code Language="csharp">
                 <![CDATA[
 				private async Task<bool> HandleLuis(ITurnContext turnContext, CancellationToken cancellationToken)
-        {
-            var luisResult = await QueryLuis(turnContext.Activity.Text);
+				{
+					var luisResult = await QueryLuis(turnContext.Activity.Text);
 
-            if (luisResult.HasSufficientScore() && luisResult.TopScoringIntent.IntentIntent == _configuration["luisRegistrationIntentName"])
-            {
-                await turnContext.SendActivityAsync("Sure, you can register here, please upload a profile picture", cancellationToken: cancellationToken);
-                return true;
-            }
-            else
-            {
-                await turnContext.SendActivityAsync("Sorry, I didn't understand what you were saying...", cancellationToken: cancellationToken);
-                return false;
-            }
-        }
+					if (luisResult.HasSufficientScore() && luisResult.TopScoringIntent.IntentIntent == _configuration["luisRegistrationIntentName"])
+					{
+						await turnContext.SendActivityAsync("Sure, you can register here, please upload a profile picture", cancellationToken: cancellationToken);
+						return true;
+					}
+					else
+					{
+						await turnContext.SendActivityAsync("Sorry, I didn't understand what you were saying...", cancellationToken: cancellationToken);
+						return false;
+					}
+				}
 
-        /// <summary>
-        /// Sends out a query to the LUIS api and validates the response
-        /// </summary>
-        /// <param name="activityText"></param>
-        /// <returns></returns>
-        private async Task<LuisResult> QueryLuis(string activityText)
-        {
-            var query = activityText;
-            var appId = _configuration["luisAppId"];
-            var subscriptionKey = _configuration["luisSubscriptionKey"];
-            var bingSpellcheckKey = _configuration["bingSpellcheckerKey"];
+				/// <summary>
+				/// Sends out a query to the LUIS api and validates the response
+				/// </summary>
+				/// <param name="activityText"></param>
+				/// <returns></returns>
+				private async Task<LuisResult> QueryLuis(string activityText)
+				{
+					var query = activityText;
+					var appId = _configuration["luisAppId"];
+					var subscriptionKey = _configuration["luisSubscriptionKey"];
+					var bingSpellcheckKey = _configuration["bingSpellcheckerKey"];
 
-            var endpointUrl = $"https://westeurope.api.cognitive.microsoft.com/luis/v2.0/apps/{appId}?verbose=true&bing-spell-check-subscription-key={bingSpellcheckKey}&timezoneOffset=60&subscription-key={subscriptionKey}&q={query}";
-            LuisResult result = null;
+					var endpointUrl = $$"https://westeurope.api.cognitive.microsoft.com/luis/v2.0/apps/{appId}?verbose=true&bing-spell-check-subscription-key={bingSpellcheckKey}&timezoneOffset=60&subscription-key={subscriptionKey}&q={query}";
+					LuisResult result = null;
 
-            var endpointQueryUrl = $"{endpointUrl}&q={query}";
+					var endpointQueryUrl = $$"{endpointUrl}&q={query}";
 
-            _logger.LogDebug($"Getting NLP query: {endpointQueryUrl}");
-            HttpResponseMessage response = await _httpClient.GetAsync(endpointQueryUrl);
+					_logger.LogDebug($$"Getting NLP query: {endpointQueryUrl}");
+					HttpResponseMessage response = await _httpClient.GetAsync(endpointQueryUrl);
 
-            var responseString = await response.Content.ReadAsStringAsync();
+					var responseString = await response.Content.ReadAsStringAsync();
 
-            if (response.IsSuccessStatusCode)
-            {
-                _logger.LogInformation($"Luis response: {responseString}");
-                result = JsonConvert.DeserializeObject<LuisResult>(responseString);
-            }
-            else
-            {
-                _logger.LogInformation($"Ooops, could not query luis: {response.StatusCode} {response.ReasonPhrase} {responseString}");
-            }
+					if (response.IsSuccessStatusCode)
+					{
+						_logger.LogInformation($$"Luis response: {responseString}");
+						result = JsonConvert.DeserializeObject<LuisResult>(responseString);
+					}
+					else
+					{
+						_logger.LogInformation($$"Ooops, could not query luis: {response.StatusCode} {response.ReasonPhrase} {responseString}");
+					}
 
-            return result;
-        }
+					return result;
+				}
 				]]>
             </Code>
         </Snippet>

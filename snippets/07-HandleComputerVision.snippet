@@ -20,19 +20,19 @@
                 var caption = result.Description.Captions.FirstOrDefault();
                 if (caption != null && caption.Confidence > _treshold)
                 {
-                    await turnContext.SendActivityAsync($"Is this you or is this {caption.Text}? Please upload another picture.", cancellationToken: cancellationToken);
+                    await turnContext.SendActivityAsync($$"Is this you or is this {caption.Text}? Please upload another picture.", cancellationToken: cancellationToken);
                 }
             }
             else
             {
                 var age = result.Faces.FirstOrDefault()?.Age;
-                _logger.LogInformation($"Age is: {age}");
+                _logger.LogInformation($$"Age is: {age}");
 
                 if (age <= 35)
                 {
                     var caption = result.Description?.Captions?.FirstOrDefault();
 
-                    await turnContext.SendActivityAsync($"Thank you hipster, always nice to see {caption?.Text}! Let's continue the registration process!", cancellationToken: cancellationToken);
+                    await turnContext.SendActivityAsync($$"Thank you hipster, always nice to see {caption?.Text}! Let's continue the registration process!", cancellationToken: cancellationToken);
                 }
                 else
                 {
@@ -56,7 +56,7 @@
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, endpoint) { Content = multipartContent };
             requestMessage.Headers.Add("Ocp-Apim-Subscription-Key", _configuration["computerVisionKey"]);
 
-            _logger.LogDebug($"Posting to Computer Vision: {endpoint}");
+            _logger.LogDebug($$"Posting to Computer Vision: {endpoint}");
 
             var response = await _httpClient.SendAsync(requestMessage);
             VisionResult result = null;
@@ -65,12 +65,12 @@
 
             if (response.IsSuccessStatusCode)
             {
-                _logger.LogInformation($"Luis response: {responseString}");
+                _logger.LogInformation($$"Luis response: {responseString}");
                 result = JsonConvert.DeserializeObject<VisionResult>(responseString);
             }
             else
             {
-                _logger.LogInformation($"Ooops, could not query vision api: {response.StatusCode} {response.ReasonPhrase} {responseString}");
+                _logger.LogInformation($$"Ooops, could not query vision api: {response.StatusCode} {response.ReasonPhrase} {responseString}");
             }
 
             return result;
